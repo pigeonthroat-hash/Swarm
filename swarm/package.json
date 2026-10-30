@@ -1,0 +1,13 @@
+{
+  "name": "swarm-web",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Swarm: a static, browser-only chat client for AI providers. No backend.",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8080 --bind 127.0.0.1",
+    "test": "node --test tests/*.test.mjs",
+    "e2e": "node tests/e2e/run.cjs http://127.0.0.1:8080/"
+  },
+  "license": "MIT"
+}
