@@ -6,6 +6,7 @@
     python main.py submit <agent> [--payload JSON] [--timeout SECS]
     python main.py run                           run all unfinished tasks
     python main.py status                        show every task
+    python main.py serve [--port 8000]           open the web chat UI
 """
 
 import argparse
@@ -107,6 +108,22 @@ def cmd_status(_args):
         print(f"{t['id']:<14}{t['agent']:<16}{t['status']:<10}{t['attempts']:<9}{t['updated']}")
 
 
+def cmd_serve(args):
+    from swarm.server import build_server
+
+    cfg = load_config()
+    _, runner = _store_and_runner(cfg)
+    server = build_server(runner, host=args.host, port=args.port)
+    url = f"http://{args.host}:{server.server_address[1]}"
+    print(f"Swarm chat running at {url}  (Ctrl+C to stop)")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nStopped.")
+    finally:
+        server.server_close()
+
+
 def build_parser():
     p = argparse.ArgumentParser(prog="swarm", description="Run autonomous bot tasks.")
     sub = p.add_subparsers(dest="command", required=True)
@@ -115,6 +132,11 @@ def build_parser():
     sub.add_parser("agents", help="list available agents").set_defaults(func=cmd_agents)
     sub.add_parser("run", help="run all unfinished tasks").set_defaults(func=cmd_run)
     sub.add_parser("status", help="show all tasks").set_defaults(func=cmd_status)
+
+    v = sub.add_parser("serve", help="open the web chat UI")
+    v.add_argument("--host", default="127.0.0.1", help="bind address (default: local only)")
+    v.add_argument("--port", type=int, default=8000)
+    v.set_defaults(func=cmd_serve)
 
     s = sub.add_parser("submit", help="queue a task for an agent")
     s.add_argument("agent")

@@ -126,6 +126,31 @@ DiningAgent.provider = MyRestaurantAPI()
 
 Keep API keys in environment variables, not in the repository.
 
+## Web chat interface
+
+Prefer a browser? Start the local web UI:
+
+```bash
+python main.py serve            # opens at http://127.0.0.1:8000
+python main.py serve --port 9000
+```
+
+Plain text is sent to the `echo` agent. Slash commands reach the rest of the framework:
+
+| Command | Does |
+|---|---|
+| `/agents` | list agents |
+| `/submit <agent> [json]` | queue a task, e.g. `/submit counter {"steps": 5}` |
+| `/status` | recent tasks |
+| `/task <id>` | details for one task |
+| `/help` | command list |
+
+When you queue a task, the chat watches it and posts the result when it finishes.
+
+The server listens on `127.0.0.1` (this machine only) by default. Only use
+`--host 0.0.0.0` on a trusted network: there is no login yet, so anyone who can reach
+the port can submit tasks.
+
 ## Writing your own agent
 
 Create a file in `agents/` and register a class:
@@ -200,10 +225,11 @@ python -m unittest discover -s tests -v
 ```
 
 The tests cover completion, unknown agents, checkpoint resume, no double booking,
-retry limits, and store persistence.
+retry limits, store persistence, chat commands, and the live HTTP endpoints.
 
 ## Roadmap
 
+- Authentication for the web UI before exposing it beyond localhost
 - Cron-style scheduling for recurring tasks ("every weekday at 7am")
 - A `swarm logs <id>` command to tail a task's log
 - Optional SQLite backend for very large queues
@@ -218,8 +244,11 @@ Swarm/
 │   ├── agent.py         # Agent base class and registry
 │   ├── runner.py        # async runner, retries, checkpoints
 │   ├── store.py         # durable JSON task store
+│   ├── chat.py          # chat command handling
+│   ├── server.py        # local HTTP server and background worker
 │   └── config.py        # swarm.config.json handling
 ├── agents/              # your bots (built-ins + yours)
+├── web/index.html       # single-file chat interface
 ├── tests/               # unit tests
 ├── README.md
 └── LICENSE

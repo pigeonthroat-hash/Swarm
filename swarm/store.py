@@ -40,5 +40,10 @@ class TaskStore:
     def all(self) -> list:
         return list(self._data["tasks"].values())
 
+    def snapshot(self) -> list:
+        """A thread-safe JSON copy of all tasks, for serving over HTTP."""
+        with self._lock:
+            return json.loads(json.dumps(list(self._data["tasks"].values())))
+
     def unfinished(self) -> list:
         return [t for t in self.all() if t["status"] in ("pending", "running")]
