@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+data/
+swarm.config.json
+*.tmp
+.env
